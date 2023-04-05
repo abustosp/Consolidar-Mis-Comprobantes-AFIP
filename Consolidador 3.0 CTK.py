@@ -50,8 +50,8 @@ def seleccionar_carpeta():
             for f in archivos:
                 data = pd.read_excel(ruta + "/" + f, header = None, skiprows=2 , )
                 data['Archivo'] = f
-                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[-2].str.strip().astype(np.int64)
-                data['Fin CUIT'] = data["Archivo"].str.split("-").str[-5].str.strip().astype(np.int64)
+                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
+                data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
 
                 #TablaBase = TablaBase.append(data)
                 TablaBase = pd.concat([TablaBase , data])
