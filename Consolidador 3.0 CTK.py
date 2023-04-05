@@ -50,8 +50,9 @@ def seleccionar_carpeta():
             for f in archivos:
                 data = pd.read_excel(ruta + "/" + f, header = None, skiprows=2 , )
                 data['Archivo'] = f
-                data['CUIT Cliente'] = data["Archivo"].str[19:30].astype(np.int64)
-                data['Fin CUIT'] = data["CUIT Cliente"].astype(str).str[-1].astype(int)
+                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[-2].str.strip().astype(np.int64)
+                data['Fin CUIT'] = data["Archivo"].str.split("-").str[-5].str.strip().astype(np.int64)
+
                 #TablaBase = TablaBase.append(data)
                 TablaBase = pd.concat([TablaBase , data])
                 
@@ -77,15 +78,23 @@ def seleccionar_carpeta():
             #Crear Tabla dinámica con los totales de las columnas  'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' por 'CUIT Cliente'
             TablaDinamica2 = pd.pivot_table(TablaBase, values=['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total'], index=['CUIT Cliente' , 'MC' , 'Archivo'], aggfunc=np.sum)
 
+            #Crear Tabla dinámica con los totales de las columnas  'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' por 'CUIT Cliente' , 'MC' , 'Archivo' y 'Tipo'
+            #TablaDinamica3 = pd.pivot_table(TablaBase, values=['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total'], index=['CUIT Cliente' , 'MC' , 'Archivo' , 'Tipo'], aggfunc=np.sum)
+            #Crear ua tabla dinámica como la anterior pero agregándo la cantidad de registros que conforman el tipo
+            TablaDinamica3 = pd.pivot_table(TablaBase, values=['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total'], index=['CUIT Cliente' , 'MC' , 'Archivo' , 'Tipo'], aggfunc={'Imp. Neto Gravado' : np.sum , 'Imp. Neto No Gravado' : np.sum , 'Imp. Op. Exentas' : np.sum , 'IVA' : np.sum , 'Imp. Total' : np.sum , 'Tipo' : 'count'})
+
             # Exportar
             Archivo_final = pd.ExcelWriter('Consolidado.xlsx', engine='openpyxl')
             TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
 
-            #Exportar Tabla Dinámica a la hoja 'TD 'Consolidado.xlsx'
+            #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
             TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
 
-            #Exportar Tabla Dinámica a la hoja 'TD2 'Consolidado.xlsx'
+            #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
             TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
+
+            #Exportar Tabla Dinámica a la hoja 'TD por CBTE' de 'Consolidado.xlsx'
+            TablaDinamica3.to_excel(Archivo_final, sheet_name="TD por CBTE" , index=True , merge_cells=False)
             
             #Guardar el archivo
             Archivo_final.save()
