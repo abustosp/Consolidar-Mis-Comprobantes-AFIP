@@ -49,12 +49,12 @@ def seleccionar_carpeta():
             # consolidadar columnas
             for f in archivos:
                 data = pd.read_excel(ruta + "/" + f, header = None, skiprows=2 , )
-                data['Archivo'] = f
-                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
-                data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
-
-                #TablaBase = TablaBase.append(data)
-                TablaBase = pd.concat([TablaBase , data])
+                # si el datsaframe esta vacio, no hacer nada
+                if len(data) > 0:
+                    data['Archivo'] = f
+                    data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
+                    data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
+                    TablaBase = pd.concat([TablaBase , data])
                 
             # Renombrar columnas
             TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
