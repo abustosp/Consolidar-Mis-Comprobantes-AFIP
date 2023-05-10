@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from tkinter import filedialog
 import time
+import os
 
 def Consolidador():
 
@@ -23,17 +24,19 @@ def Consolidador():
     # Consolidar archivos y renombrar columnas
     # consolidadar columnas
     for f in archivos:
-        data = pd.read_excel(f, header = None, skiprows=2 , )
-        # si el datsaframe esta vacio, no hacer nada
-        if len(data) > 0:
+        #Si el existe el archivo, leerlo
+        if os.path.isfile(f):  
+            data = pd.read_excel(f, header = None, skiprows=2 , )
+            # si el datsaframe esta vacio, no hacer nada
+            if len(data) > 0:
 
-            # Crear la columna 'Archivo' con el ultimo elemento de 'f' separado por "/"
-            data['Archivo'] = f.split("/")[-1]
-            #data['Archivo'] = f.str.split("/")[-1]
-            data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
-            data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
-            TablaBase = pd.concat([TablaBase , data])
-        
+                # Crear la columna 'Archivo' con el ultimo elemento de 'f' separado por "/"
+                data['Archivo'] = f.split("/")[-1]
+                #data['Archivo'] = f.str.split("/")[-1]
+                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
+                data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
+                TablaBase = pd.concat([TablaBase , data])
+            
     # Renombrar columnas
     TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
 
