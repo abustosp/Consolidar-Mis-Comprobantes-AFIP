@@ -3,6 +3,7 @@ import numpy as np
 from tkinter import filedialog
 import time
 import os
+from tkinter.messagebox import showinfo
 
 def Consolidador():
 
@@ -87,7 +88,15 @@ def Consolidador():
 
     EndTime = time.time()
 
+    Ejecucion = EndTime - StartTime
+
+    #Mostrarlo en 2 decimales
+    Ejecucion = round(Ejecucion, 2)
+
     print("Tiempo de ejecución: " + str(EndTime - StartTime) + " segundos")
+
+    # Crear una ventana de mensaje con "El archivo se ha consolidado correctamente en Segundo"
+    showinfo("Consolidador" , "El archivo se ha consolidado correctamente en " + str(Ejecucion) + " segundos")
 
 if __name__ == "__main__":
     Consolidador()
