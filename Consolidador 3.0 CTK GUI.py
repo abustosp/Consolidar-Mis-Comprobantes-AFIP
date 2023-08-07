@@ -113,45 +113,69 @@ def seleccionar_carpeta():
             Fondotitulo = PatternFill(start_color='002060' , end_color='002060' ,  fill_type='solid')
             LetraColor = Font(color='FFFFFF')
 
-            # Aplicar formato al encabezado
-            for cell in hoja1[1]:
-                cell.fill = Fondotitulo
-                cell.font = LetraColor
-            for cell in hoja2[1]:
-                cell.fill = Fondotitulo
-                cell.font = LetraColor
-            for cell in hoja3[1]:
-                cell.fill = Fondotitulo
-                cell.font = LetraColor
+            # Funciones para formatear Excel
 
-            # Aplicar formato a los números con el separador de miles (.) y dos decimales (,)
-            formato = '#,##0.00'
-            for cell in hoja1.iter_rows(min_row=2, min_col=10, max_row=hoja1.max_row, max_col=16):
-                for celda in cell:
-                    celda.number_format = formato
-            for cell in hoja2.iter_rows(min_row=2, min_col=2, max_row=hoja1.max_row, max_col=6):
-                for celda in cell:
-                    celda.number_format = formato
-            for cell in hoja3.iter_rows(min_row=2, min_col=5, max_row=hoja1.max_row, max_col=9):
-                for celda in cell:
-                    celda.number_format = formato
+            # Aplicar formato al encabezado
+            def Aplicar_formato_encabezado(HojaActual : Worksheet):
+                '''
+                Función que aplica formato al encabezado de la hoja
+                '''
+                
+                for cell in HojaActual[1]:
+                    cell.fill = Fondotitulo
+                    cell.font = LetraColor
+
+
+            # Aplica formato de moneda a las columnas de importes
+            def Aplicar_formato_moneda(HojaActual : Worksheet , ColumnaInicial : int , ColumnaFinal : int):
+                '''
+                Función que aplica formato de moneda a las columnas de importes
+                '''
+                
+                formato = '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-'
+
+                for cell in HojaActual.iter_rows(min_row=2, min_col=ColumnaInicial, max_row=HojaActual.max_row, max_col=ColumnaFinal):
+                    for celda in cell:
+                        celda.number_format = '$ #,##0.00'
 
 
             # Autoajustar los anchos de las columnas según el contenido
-            for column_cells in hoja1.columns:
-                length = max(len(str(cell.value)) for cell in column_cells)
-                hoja1.column_dimensions[column_cells[0].column_letter].width = length + 2
-            for column_cells in hoja2.columns:
-                length = max(len(str(cell.value)) for cell in column_cells)
-                hoja2.column_dimensions[column_cells[0].column_letter].width = length + 2
-            for column_cells in hoja3.columns:
-                length = max(len(str(cell.value)) for cell in column_cells)
-                hoja3.column_dimensions[column_cells[0].column_letter].width = length + 2
+            def Autoajustar_columnas(HojaActual : Worksheet):
+                '''
+                Función que autoajusta las columnas de la hoja
+                '''
+                
+                for column_cells in HojaActual.columns:
+                    length = max(len(str(cell.value)) for cell in column_cells)
+                    HojaActual.column_dimensions[column_cells[0].column_letter].width = length + 2
 
-            # Agregar filtros de datos de ambas hojas
-            hoja1.auto_filter.ref = hoja1.dimensions
-            hoja2.auto_filter.ref = hoja2.dimensions
-            hoja3.auto_filter.ref = hoja3.dimensions
+
+            # Agregar filtros de datos a las hojas
+            def Agregar_filtros(HojaActual : Worksheet):
+                '''
+                Función que agrega filtros a la hoja
+                '''
+                
+                HojaActual.auto_filter.ref = HojaActual.dimensions
+
+
+
+            # Aplicar formatos
+            Aplicar_formato_encabezado(hoja1)
+            Aplicar_formato_encabezado(hoja2)
+            Aplicar_formato_encabezado(hoja3)
+
+            Aplicar_formato_moneda(hoja1 , 10 , 16)
+            Aplicar_formato_moneda(hoja2 , 2 , 6)
+            Aplicar_formato_moneda(hoja3 , 5 , 9)
+            
+            Autoajustar_columnas(hoja1)
+            Autoajustar_columnas(hoja2)
+            Autoajustar_columnas(hoja3)
+
+            Agregar_filtros(hoja1)
+            Agregar_filtros(hoja2)
+            Agregar_filtros(hoja3)
 
             # Guardar el archivo Excel
             workbook.save('Consolidado.xlsx')
