@@ -4,6 +4,8 @@ from tkinter import filedialog
 import time
 import os
 from tkinter.messagebox import showinfo
+import formatos as fmt
+import openpyxl
 
 def Consolidador():
 
@@ -71,20 +73,42 @@ def Consolidador():
     #TablaDinamica3.rename(columns={'Tipo': 'Cantidad de Comprobantes'}, inplace=True)
 
     # Exportar
-    Archivo_final = pd.ExcelWriter('Consolidado.xlsx', engine='openpyxl')
-    TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
+    with pd.ExcelWriter('Consolidado.xlsx') as Archivo_final:
+        #Exportar Tabla Base a la hoja 'Consolidado' de 'Consolidado.xlsx'
+        TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
+        #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
+        TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
+        #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
+        TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
 
-    #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
-    TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
+    # Aplicar formatos
+    workbook = openpyxl.load_workbook('Consolidado.xlsx')
+    hoja1 = workbook['Consolidado']  # Nombre de la hoja del DataFrame
+    hoja2 = workbook['TD']  # Nombre de la hoja del DataFrame
+    hoja3 = workbook['TD Cruce']  # Nombre de la hoja del DataFrame
 
-    #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
-    TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
+    # Aplicar formatos
+    fmt.Aplicar_formato_encabezado(hoja1)
+    fmt.Aplicar_formato_encabezado(hoja2)
+    fmt.Aplicar_formato_encabezado(hoja3)
 
-    #Exportar Tabla Dinámica a la hoja 'TD por CBTE' de 'Consolidado.xlsx'
-    #TablaDinamica3.to_excel(Archivo_final, sheet_name="TD por CBTE" , index=True , merge_cells=False)
+    fmt.Aplicar_formato_moneda(hoja1 , 10 , 16)
+    fmt.Aplicar_formato_moneda(hoja2 , 2 , 6)
+    fmt.Aplicar_formato_moneda(hoja3 , 5 , 9)
+    
+    fmt.Autoajustar_columnas(hoja1)
+    fmt.Autoajustar_columnas(hoja2)
+    fmt.Autoajustar_columnas(hoja3)
 
-    #Guardar el archivo
-    Archivo_final.save()
+    fmt.Agregar_filtros(hoja1)
+    fmt.Agregar_filtros(hoja2)
+    fmt.Agregar_filtros(hoja3)
+
+    fmt.Alinear_columnas(hoja2 , 1 , 1 , 'left')
+    fmt.Alinear_columnas(hoja3 , 1 , 4 , 'left')
+
+    # Guardar el archivo Excel
+    workbook.save('Consolidado.xlsx')
 
     EndTime = time.time()
 
