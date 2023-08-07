@@ -93,12 +93,10 @@ def seleccionar_carpeta():
 
             # Exportar
             with pd.ExcelWriter('Consolidado.xlsx') as Archivo_final:
-
+                #Exportar Tabla Base a la hoja 'Consolidado' de 'Consolidado.xlsx'
                 TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
-
                 #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
                 TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
-
                 #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
                 TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
 
@@ -109,7 +107,6 @@ def seleccionar_carpeta():
             hoja1 = workbook['Consolidado']  # Nombre de la hoja del DataFrame
             hoja2 = workbook['TD']  # Nombre de la hoja del DataFrame
             hoja3 = workbook['TD Cruce']  # Nombre de la hoja del DataFrame
-
 
             # Aplicar formatos
             fmt.Aplicar_formato_encabezado(hoja1)
