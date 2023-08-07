@@ -3,6 +3,8 @@ import numpy as np
 import os
 import customtkinter as ctk
 from tkinter import filedialog
+import openpyxl
+from openpyxl.styles import PatternFill, Font
 
 
 ###### TKinter #############################################
@@ -70,7 +72,7 @@ def seleccionar_carpeta():
             TablaBase.loc[TablaBase["Tipo"].str.contains("Nota de Crédito"), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total']] *= -1
             
             #Crear columna de 'MC' con los valores 'archivo' que van desde el caracter 5 al 8 en la TablaBase
-            TablaBase['MC'] = TablaBase['Archivo'].str.split("-").str[1].str.strip().astype(np.int64)
+            TablaBase['MC'] = TablaBase['Archivo'].str.split("-").str[1].str.strip()
 
             #Crear Tabla dinámica con los totales de las columnas  'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' por 'Archivo'
             TablaDinamica = pd.pivot_table(TablaBase, values=['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Tipo'], index=['Archivo'], aggfunc={'Imp. Neto Gravado': np.sum , 'Imp. Neto No Gravado': np.sum , 'Imp. Op. Exentas': np.sum , 'IVA': np.sum , 'Imp. Total': np.sum , 'Tipo': 'count'})
@@ -89,20 +91,57 @@ def seleccionar_carpeta():
             #TablaDinamica3.rename(columns={'Tipo': 'Cantidad de Comprobantes'}, inplace=True)
 
             # Exportar
-            Archivo_final = pd.ExcelWriter('Consolidado.xlsx', engine='openpyxl')
-            TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
+            with pd.ExcelWriter('Consolidado.xlsx') as Archivo_final:
 
-            #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
-            TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
+                TablaBase.to_excel(Archivo_final, sheet_name="Consolidado" , index=False)
 
-            #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
-            TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
+                #Exportar Tabla Dinámica a la hoja 'TD' de 'Consolidado.xlsx'
+                TablaDinamica.to_excel(Archivo_final, sheet_name="TD" , index=True , merge_cells=False)
+
+                #Exportar Tabla Dinámica a la hoja 'TD2' de 'Consolidado.xlsx'
+                TablaDinamica2.to_excel(Archivo_final, sheet_name="TD Cruce" , index=True , merge_cells=False)
 
             #Exportar Tabla Dinámica a la hoja 'TD por CBTE' de 'Consolidado.xlsx'
             #TablaDinamica3.to_excel(Archivo_final, sheet_name="TD por CBTE" , index=True , merge_cells=False)
             
-            #Guardar el archivo
-            Archivo_final.save()
+            workbook = openpyxl.load_workbook('Consolidado.xlsx')
+            hoja1 = workbook['Consolidado']  # Nombre de la hoja del DataFrame
+            hoja2 = workbook['TD']  # Nombre de la hoja del DataFrame
+            hoja3 = workbook['TD Cruce']  # Nombre de la hoja del DataFrame
+
+            # Darle formato a los Títulos de las columnas
+            Fondotitulo = PatternFill(start_color='002060' , end_color='002060' ,  fill_type='solid')
+            LetraColor = Font(color='FFFFFF')
+
+            # Aplicar formato al encabezado
+            for cell in hoja1[1]:
+                cell.fill = Fondotitulo
+                cell.font = LetraColor
+            for cell in hoja2[1]:
+                cell.fill = Fondotitulo
+                cell.font = LetraColor
+            for cell in hoja3[1]:
+                cell.fill = Fondotitulo
+                cell.font = LetraColor
+
+            # Autoajustar los anchos de las columnas según el contenido
+            for column_cells in hoja1.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                hoja1.column_dimensions[column_cells[0].column_letter].width = length + 2
+            for column_cells in hoja2.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                hoja2.column_dimensions[column_cells[0].column_letter].width = length + 2
+            for column_cells in hoja3.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                hoja3.column_dimensions[column_cells[0].column_letter].width = length + 2
+
+            # Agregar filtros de datos de ambas hojas
+            hoja1.auto_filter.ref = hoja1.dimensions
+            hoja2.auto_filter.ref = hoja2.dimensions
+            hoja3.auto_filter.ref = hoja3.dimensions
+
+            # Guardar el archivo Excel
+            workbook.save('Consolidado.xlsx')
 
         else:
             
