@@ -4,7 +4,7 @@ import os
 import customtkinter as ctk
 from tkinter import filedialog
 import openpyxl
-from openpyxl.styles import PatternFill, Font
+from openpyxl.styles import PatternFill, Font , alignment
 
 
 ###### TKinter #############################################
@@ -123,6 +123,19 @@ def seleccionar_carpeta():
             for cell in hoja3[1]:
                 cell.fill = Fondotitulo
                 cell.font = LetraColor
+
+            # Aplicar formato a los números con el separador de miles (.) y dos decimales (,)
+            formato = '#,##0.00'
+            for cell in hoja1.iter_rows(min_row=2, min_col=10, max_row=hoja1.max_row, max_col=16):
+                for celda in cell:
+                    celda.number_format = formato
+            for cell in hoja2.iter_rows(min_row=2, min_col=2, max_row=hoja1.max_row, max_col=6):
+                for celda in cell:
+                    celda.number_format = formato
+            for cell in hoja3.iter_rows(min_row=2, min_col=5, max_row=hoja1.max_row, max_col=9):
+                for celda in cell:
+                    celda.number_format = formato
+
 
             # Autoajustar los anchos de las columnas según el contenido
             for column_cells in hoja1.columns:
