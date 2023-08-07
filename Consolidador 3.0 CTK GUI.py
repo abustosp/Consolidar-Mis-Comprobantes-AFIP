@@ -4,7 +4,9 @@ import os
 import customtkinter as ctk
 from tkinter import filedialog
 import openpyxl
-from openpyxl.styles import PatternFill, Font , alignment
+from openpyxl.styles import PatternFill, Font , Alignment
+from openpyxl.worksheet.worksheet import Worksheet
+
 
 
 ###### TKinter #############################################
@@ -55,11 +57,12 @@ def seleccionar_carpeta():
                 if len(data) > 0:
                     data['Archivo'] = f
                     data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
+                    data['Denominación Cliente'] = data["Archivo"].str.split("-").str[4].str.strip()
                     data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
                     TablaBase = pd.concat([TablaBase , data])
                 
             # Renombrar columnas
-            TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
+            TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Denominación Cliente' , 'Fin CUIT']
 
             #Multiplicar por tipo de cambio
             TablaBase['Imp. Neto Gravado'] *= TablaBase['Tipo Cambio']
@@ -136,7 +139,7 @@ def seleccionar_carpeta():
 
                 for cell in HojaActual.iter_rows(min_row=2, min_col=ColumnaInicial, max_row=HojaActual.max_row, max_col=ColumnaFinal):
                     for celda in cell:
-                        celda.number_format = '$ #,##0.00'
+                        celda.number_format = formato
 
 
             # Autoajustar los anchos de las columnas según el contenido
@@ -158,6 +161,16 @@ def seleccionar_carpeta():
                 
                 HojaActual.auto_filter.ref = HojaActual.dimensions
 
+            # Alinear columnas
+            def Alinear_columnas(HojaActual : Worksheet , ColumnaInicial : int , ColumnaFinal : int , Alineacion : str):
+                '''
+                Función que alinea las columnas de la hoja
+                '''
+                
+                for cell in HojaActual.iter_rows(min_row=2, min_col=ColumnaInicial, max_row=HojaActual.max_row, max_col=ColumnaFinal):
+                    for celda in cell:
+                        celda.alignment = Alineacion
+
 
 
             # Aplicar formatos
@@ -176,6 +189,10 @@ def seleccionar_carpeta():
             Agregar_filtros(hoja1)
             Agregar_filtros(hoja2)
             Agregar_filtros(hoja3)
+
+            # Alinar toda la columna A de la hoja 2 a la izquierda
+            Alinear_columnas(hoja2 , 1 , 1 , Alignment(horizontal='left'))
+            Alinear_columnas(hoja3 , 1 , 4 , Alignment(horizontal='left'))
 
             # Guardar el archivo Excel
             workbook.save('Consolidado.xlsx')
