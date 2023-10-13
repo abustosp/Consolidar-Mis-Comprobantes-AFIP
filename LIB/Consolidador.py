@@ -4,10 +4,10 @@ from tkinter import filedialog
 import time
 import os
 from tkinter.messagebox import showinfo
-import formatos as fmt
+import LIB.formatos as fmt
 import openpyxl
 
-def Consolidador():
+def Consolidador_Excel():
 
     StartTime = time.time()
 
@@ -21,6 +21,57 @@ def Consolidador():
 
     # Hacer una lista con el la primer columna del excel
     archivos = archivos.iloc[:,0].tolist() 
+
+    # Consolidar Archivos
+    Consolidador(archivos)
+
+    EndTime = time.time()
+    Ejecucion = EndTime - StartTime
+    Ejecucion = round(Ejecucion, 2)
+
+    # Crear una ventana de mensaje con "El archivo se ha consolidado correctamente en Segundo"
+    showinfo("Consolidador" , "El archivo se ha consolidado correctamente en " + str(Ejecucion) + " segundos")
+
+
+def Consolidador_Carpetas():
+    '''
+    Consolidar archivos de Excel de Mis Comprobantes en Base a una carpeta seleccionada
+    '''
+
+    Carpeta = filedialog.askdirectory(title="Seleccionar la carpeta que posee los archivos a consolidar")
+
+    StartTime = time.time()
+
+    # Listar archivos de la carpeta seleccionada
+    archivos = os.listdir(Carpeta)
+
+    # Filtrar archivos de Excel
+    archivos = [f for f in archivos if f.endswith('.xlsx')]
+
+    # Agregar la ruta de la carpeta a cada archivo
+    archivos = [Carpeta + "/" + f for f in archivos]
+
+    # Consolidar Archivos
+    Consolidador(archivos)
+
+    EndTime = time.time()
+    Ejecucion = EndTime - StartTime
+    Ejecucion = round(Ejecucion, 2)
+
+    # crear un mensaje con el tiempo de ejecución
+    showinfo("Consolidador" , "El archivo se ha consolidado correctamente en " + str(Ejecucion) + " segundos")
+
+
+
+def Consolidador(archivos: list):
+    '''
+    Consolidar archivos de Excel de Mis Comprobantes en Base a una lista de archivos
+    
+    Parameters
+    ----------
+    archivos : list
+        Lista de archivos de Excel de Mis Comprobantes
+    '''
 
     TablaBase = pd.DataFrame()
 
@@ -41,14 +92,15 @@ def Consolidador():
                 TablaBase = pd.concat([TablaBase , data])
             
     # Renombrar columnas
-    TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
+    TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
 
     #Multiplicar por tipo de cambio
     TablaBase['Imp. Neto Gravado'] *= TablaBase['Tipo Cambio']
     TablaBase['Imp. Neto No Gravado'] *= TablaBase['Tipo Cambio']
     TablaBase['Imp. Op. Exentas'] *= TablaBase['Tipo Cambio']
     TablaBase['IVA'] *= TablaBase['Tipo Cambio']
-    TablaBase['Imp. Total'] *= TablaBase['Tipo Cambio']   
+    TablaBase['Imp. Total'] *= TablaBase['Tipo Cambio']
+    TablaBase['Otros Tributos'] *= TablaBase['Tipo Cambio']   
 
     #Cambiar de signo si es una Nota de Crédito
     TablaBase.loc[TablaBase["Tipo"].str.contains("Nota de Crédito"), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total']] *= -1
@@ -87,22 +139,16 @@ def Consolidador():
     hoja2 = workbook['TD']  # Nombre de la hoja del DataFrame
     hoja3 = workbook['TD Cruce']  # Nombre de la hoja del DataFrame
 
-    # Aplicar formatos
-    fmt.Aplicar_formato_encabezado(hoja1)
-    fmt.Aplicar_formato_encabezado(hoja2)
-    fmt.Aplicar_formato_encabezado(hoja3)
+    Hojas = [hoja1 , hoja2 , hoja3]
+
+    for hoja in Hojas:    
+        fmt.Aplicar_formato_encabezado(hoja)
+        fmt.Autoajustar_columnas(hoja)
+        fmt.Agregar_filtros(hoja)
 
     fmt.Aplicar_formato_moneda(hoja1 , 10 , 16)
     fmt.Aplicar_formato_moneda(hoja2 , 2 , 6)
     fmt.Aplicar_formato_moneda(hoja3 , 5 , 9)
-    
-    fmt.Autoajustar_columnas(hoja1)
-    fmt.Autoajustar_columnas(hoja2)
-    fmt.Autoajustar_columnas(hoja3)
-
-    fmt.Agregar_filtros(hoja1)
-    fmt.Agregar_filtros(hoja2)
-    fmt.Agregar_filtros(hoja3)
 
     fmt.Alinear_columnas(hoja2 , 1 , 1 , 'left')
     fmt.Alinear_columnas(hoja3 , 1 , 4 , 'left')
@@ -110,17 +156,3 @@ def Consolidador():
     # Guardar el archivo Excel
     workbook.save('Consolidado.xlsx')
 
-    EndTime = time.time()
-
-    Ejecucion = EndTime - StartTime
-
-    #Mostrarlo en 2 decimales
-    Ejecucion = round(Ejecucion, 2)
-
-    print("Tiempo de ejecución: " + str(EndTime - StartTime) + " segundos")
-
-    # Crear una ventana de mensaje con "El archivo se ha consolidado correctamente en Segundo"
-    showinfo("Consolidador" , "El archivo se ha consolidado correctamente en " + str(Ejecucion) + " segundos")
-
-if __name__ == "__main__":
-    Consolidador()
