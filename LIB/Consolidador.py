@@ -20,7 +20,13 @@ def Consolidador_Excel():
     archivos = pd.read_excel(ruta.name)
 
     # Hacer una lista con el la primer columna del excel
-    archivos = archivos.iloc[:,0].tolist() 
+    archivos = archivos.iloc[:,0].tolist()
+
+    # Eliminar los valores nulos de la lista y los que no terminan en .xlsx
+    archivos = [f for f in archivos if str(f) != 'nan']
+
+    # Reemplazar los \ por / en la lista
+    archivos = [f.replace("\\", "/") for f in archivos]
 
     # Consolidar Archivos
     Consolidador(archivos)
@@ -78,18 +84,24 @@ def Consolidador(archivos: list):
     # Consolidar archivos y renombrar columnas
     # consolidadar columnas
     for f in archivos:
-        #Si el existe el archivo, leerlo
-        if os.path.isfile(f):  
-            data = pd.read_excel(f, header = None, skiprows=2 , )
-            # si el datsaframe esta vacio, no hacer nada
-            if len(data) > 0:
 
-                # Crear la columna 'Archivo' con el ultimo elemento de 'f' separado por "/"
-                data['Archivo'] = f.split("/")[-1]
-                #data['Archivo'] = f.str.split("/")[-1]
-                data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
-                data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
-                TablaBase = pd.concat([TablaBase , data])
+        try:
+
+            #Si el existe el archivo, leerlo
+            if os.path.isfile(f):  
+                data = pd.read_excel(f, header = None, skiprows=2 , )
+                # si el datsaframe esta vacio, no hacer nada
+                if len(data) > 0:
+
+                    # Crear la columna 'Archivo' con el ultimo elemento de 'f' separado por "/"
+                    data['Archivo'] = f.split("/")[-1]
+                    #data['Archivo'] = f.str.split("/")[-1]
+                    data['CUIT Cliente'] = data["Archivo"].str.split("-").str[3].str.strip().astype(np.int64)
+                    data['Fin CUIT'] = data["Archivo"].str.split("-").str[0].str.strip().astype(np.int64)
+                    TablaBase = pd.concat([TablaBase , data])
+
+        except:
+            pass
             
     # Renombrar columnas
     TablaBase.columns = [ 'Fecha' , 'Tipo' , 'Punto de Venta' , 'Número Desde' , 'Número Hasta' , 'Cód. Autorización' , 'Tipo Doc. Receptor' , 'Nro. Doc. Receptor/Emisor' , 'Denominación Receptor/Emisor' , 'Tipo Cambio' , 'Moneda' , 'Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos' , 'IVA' , 'Imp. Total' , 'Archivo' , 'CUIT Cliente' , 'Fin CUIT']
