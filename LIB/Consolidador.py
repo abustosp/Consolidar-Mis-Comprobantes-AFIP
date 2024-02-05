@@ -4,7 +4,10 @@ from tkinter import filedialog
 import time
 import os
 from tkinter.messagebox import showinfo
-import LIB.formatos as fmt
+try:
+    import LIB.formatos as fmt
+except:
+    import formatos as fmt
 import openpyxl
 
 def Consolidador_Excel():
@@ -114,14 +117,8 @@ def Consolidador(archivos: list):
     TablaBase['Imp. Total'] *= TablaBase['Tipo Cambio']
     TablaBase['Otros Tributos'] *= TablaBase['Tipo Cambio']   
 
-    Códigos_NC = [ "Nota de Crédito" , "3" ]
-
-    for i in Códigos_NC:
-        try:
-            #Cambiar de signo si es una Nota de Crédito
-            TablaBase.loc[TablaBase["Tipo"].str.contains(Códigos_NC[i]), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos', 'IVA' , 'Imp. Total']] *= -1
-        except:
-            pass
+    #Cambiar de signo si es una Nota de Crédito
+    TablaBase.loc[TablaBase["Tipo"].str.contains("Nota de Crédito"), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos', 'IVA' , 'Imp. Total']] *= -1
 
     #Crear columna de 'MC' con los valores 'archivo' que van desde el caracter 5 al 8 en la TablaBase
     TablaBase['MC'] = TablaBase['Archivo'].str.split("-").str[1].str.strip()
@@ -174,3 +171,5 @@ def Consolidador(archivos: list):
     # Guardar el archivo Excel
     workbook.save('Consolidado.xlsx')
 
+if __name__ == "__main__":
+    Consolidador_Carpetas()
