@@ -114,12 +114,12 @@ def Consolidador(archivos: list):
     TablaBase['Imp. Total'] *= TablaBase['Tipo Cambio']
     TablaBase['Otros Tributos'] *= TablaBase['Tipo Cambio']   
 
-    Códigos_NC = [ "Nota de Crédito" , 3 ]
+    Códigos_NC = [ "Nota de Crédito" , "3" ]
 
     for i in Códigos_NC:
         try:
             #Cambiar de signo si es una Nota de Crédito
-            TablaBase.loc[TablaBase["Tipo"].str.contains(Códigos_NC[i]), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'IVA' , 'Imp. Total']] *= -1
+            TablaBase.loc[TablaBase["Tipo"].str.contains(Códigos_NC[i]), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos', 'IVA' , 'Imp. Total']] *= -1
         except:
             pass
 
