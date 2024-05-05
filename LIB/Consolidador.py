@@ -117,8 +117,10 @@ def Consolidador(archivos: list):
     TablaBase['Imp. Total'] *= TablaBase['Tipo Cambio']
     TablaBase['Otros Tributos'] *= TablaBase['Tipo Cambio']   
 
+    TablaBase['Tipo'] = TablaBase['Tipo'].str.strip().str.upper()
+    
     #Cambiar de signo si es una Nota de Crédito
-    TablaBase.loc[TablaBase["Tipo"].str.contains("Nota de Crédito"), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos', 'IVA' , 'Imp. Total']] *= -1
+    TablaBase.loc[TablaBase["Tipo"].str.contains("NOTA DE CRÉDITO"), ['Imp. Neto Gravado' , 'Imp. Neto No Gravado' , 'Imp. Op. Exentas' , 'Otros Tributos', 'IVA' , 'Imp. Total']] *= -1
 
     #Crear columna de 'MC' con los valores 'archivo' que van desde el caracter 5 al 8 en la TablaBase
     TablaBase['MC'] = TablaBase['Archivo'].str.split("-").str[1].str.strip()
