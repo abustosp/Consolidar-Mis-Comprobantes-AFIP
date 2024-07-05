@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import os
 import customtkinter as ctk
 from LIB.Consolidador import Consolidador_Excel, Consolidador_Carpetas
