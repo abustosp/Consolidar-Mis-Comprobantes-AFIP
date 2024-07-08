@@ -20,8 +20,10 @@ def filtrar_archivos(
         directorio = askdirectory(title="Seleccionar el directorio donde se encuentran los archivos a filtrar")
         
     if periodo == None:
-        periodo = "-".join([directorio.split("/")[3][:4], directorio.split("/")[3][4:6]])
-        
+        try:
+            periodo = "-".join([directorio.split("/")[3][:4], directorio.split("/")[3][4:6]])
+        except:
+            periodo = None
         
     if archivo_con_datos == None:
         # Archivo de Excel con los datos de los libros que deben ser procesados e importados automáticamente
